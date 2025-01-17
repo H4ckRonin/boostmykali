@@ -4,7 +4,7 @@
 
 ---
 
-![BoostMyKali](https://via.placeholder.com/800x400.png?text=BoostMyKali+Anime+Style)  
+![BoostMyKali]([https://via.placeholder.com/800x400.png?text=BoostMyKali+Anime+Style](https://media1.tenor.com/m/ent7ezY8bqkAAAAd/world-trigger-anime.gif))  
 *Anime-geïnspireerd Kali thema*
 
 ## 🚀 Kenmerken
