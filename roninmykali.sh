@@ -37,50 +37,20 @@ upgrade_system() {
 }
 
 configure_git() {
-    sudo apt install xclip -y
-    # Define the default SSH key path
-    local ssh_key_path="$HOME/.ssh/id_rsa"
-    
-    # Check if the SSH key already exists
-    if [[ -f "$ssh_key_path" ]]; then
-        echo "SSH key already exists at $ssh_key_path. Skipping key generation."
-    else
-        echo "Generating a new SSH key..."
-        
-        # Prompt the user for their email (for git commit identity)
-        read -p "Enter your Git email address: " email
-        
-        # Generate the SSH key
-        ssh-keygen -t rsa -b 4096 -C "$email" -f "$ssh_key_path" -N ""
-
-        echo "SSH key generated at $ssh_key_path"
-    fi
-    
-    # Start the SSH agent and add the key
-    eval "$(ssh-agent -s)"
-    ssh-add "$ssh_key_path"
-
-    # Display the public key to the user for GitHub/remote use
-    echo "Your SSH public key is: "
-    cat "$ssh_key_path.pub"
-    
-    echo "You can now copy the SSH public key and add it to your GitHub, GitLab, or other Git service account."
-
-    # Display the GitHub SSH key settings page link
-    echo "To manually add the SSH key to GitHub, visit the following link:"
+    echo "Generate your new access token https://github.com/settings/tokens"
     echo ""
-    echo "https://github.com/settings/keys"
-    
-    echo "Run the following command to copy it to your clipboard (Linux only):"
-    echo "cat $ssh_key_path.pub | xclip -selection clipboard"
-
-    # Optionally, configure the SSH key for GitHub (you can skip this step if desired)
-    read -p "Do you want to set this SSH key for GitHub? (y/n): " set_ssh_for_github
-    if [[ "$set_ssh_for_github" == "y" ]]; then
-        git config --global user.name "Your GitHub Username"
-        git config --global user.email "$email"
-        echo "SSH key has been configured for GitHub."
-    fi
+    echo "https://github.com/settings/tokens"
+    echo "Note: SAVE YOUR ACCESS TOKEN"
+    echo "Please enter your github username:"
+    read -s github_username
+    echo "Please enter your github password:"
+    read -s github_password
+    git config --global user.name $github_username
+    git config --global user.email $github_password
+    git config -l
+    #incase you want to record your token git config --global credential.helper cache
+    #git config --global --unset credential.helper
+    #git config --system --unset credential.helper
 }
 
 # Functie om Codium te installeren
@@ -135,10 +105,34 @@ install_other_tools() {
 
 install_bbh() {
     echo "Bug Bounty Hunter Tools installeren..."
+    
+    # Install required packages
     sudo apt install golang amass subfinder ffuf feroxbuster gobuster dirbuster dirsearch -y
+    
+    # Ask for Go version
+    echo "Type the version of Go you want to install (1.19 or leave blank for latest recommended):"
+    read GOVERSION
+    
+    # If Go version is provided, download and run the installer script with the specified version
+    if [ -n "$GOVERSION" ]; then
+        # Download the installer script
+        echo "Downloading go-installer.sh..."
+        wget https://git.io/go-installer.sh
+        chmod +x go-installer.sh
+        # Run the installer script with the specified version
+        bash go-installer.sh --version "$GOVERSION"
+    else
+        # If no version is provided, use curl to run the script directly
+        echo "Running go-installer.sh directly..."
+        bash <(curl -sL https://git.io/go-installer)
+    fi
+    
+    # Install Project Discovery's Tool Manager
     echo "Installing Project Discovery's Tool Manager"
     go install -v github.com/projectdiscovery/pdtm/cmd/pdtm@latest
-    pdtm -install-all
+    
+    # Final instructions
+    echo "Now you have to type: source ~/.zshrc; pdtm --install-all"
 }
 
 api_bbh(){
@@ -155,7 +149,7 @@ api_bbh(){
     echo "ProjectDiscovery API key has been set successfully."
 #    cvemap -auth
 #    asnmap -auth
-
+    sudo apt install -y libpcap-dev massdns
 }
 
 # Function to install plugins
