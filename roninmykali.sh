@@ -37,17 +37,51 @@ upgrade_system() {
 }
 
 configure_git() {
-  read -p "Voer je naam in: " name
-  read -p "Voer je e-mailadres in: " email
+    sudo apt install xclip -y
+    # Define the default SSH key path
+    local ssh_key_path="$HOME/.ssh/id_rsa"
+    
+    # Check if the SSH key already exists
+    if [[ -f "$ssh_key_path" ]]; then
+        echo "SSH key already exists at $ssh_key_path. Skipping key generation."
+    else
+        echo "Generating a new SSH key..."
+        
+        # Prompt the user for their email (for git commit identity)
+        read -p "Enter your Git email address: " email
+        
+        # Generate the SSH key
+        ssh-keygen -t rsa -b 4096 -C "$email" -f "$ssh_key_path" -N ""
 
-  git config --global user.name "$name"
-  git config --global user.email "$email"
+        echo "SSH key generated at $ssh_key_path"
+    fi
+    
+    # Start the SSH agent and add the key
+    eval "$(ssh-agent -s)"
+    ssh-add "$ssh_key_path"
 
-  echo "Git-configuratie is ingesteld:"
-  echo "Naam: $name"
-  echo "E-mail: $email"
+    # Display the public key to the user for GitHub/remote use
+    echo "Your SSH public key is: "
+    cat "$ssh_key_path.pub"
+    
+    echo "You can now copy the SSH public key and add it to your GitHub, GitLab, or other Git service account."
+
+    # Display the GitHub SSH key settings page link
+    echo "To manually add the SSH key to GitHub, visit the following link:"
+    echo ""
+    echo "https://github.com/settings/keys"
+    
+    echo "Run the following command to copy it to your clipboard (Linux only):"
+    echo "cat $ssh_key_path.pub | xclip -selection clipboard"
+
+    # Optionally, configure the SSH key for GitHub (you can skip this step if desired)
+    read -p "Do you want to set this SSH key for GitHub? (y/n): " set_ssh_for_github
+    if [[ "$set_ssh_for_github" == "y" ]]; then
+        git config --global user.name "Your GitHub Username"
+        git config --global user.email "$email"
+        echo "SSH key has been configured for GitHub."
+    fi
 }
-
 
 # Functie om Codium te installeren
 install_Codium() {
@@ -269,6 +303,7 @@ EOF
             ;;
         5)
             configure_git
+            ;;
         6)
             echo "Afsluiten. Tot ziens!"
             exit 0
