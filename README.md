@@ -86,3 +86,22 @@ BoostMyKali is open-source software, gelicenseerd onder de MIT-licentie. Dit bet
 ## 💬 Ondersteuning
 
 Heb je vragen of loop je tegen problemen aan? Neem contact op via de issues sectie van de repository, en we helpen je graag verder!
+
+## 📝 To-Do
+
+### 💻 Verbeteringen
+- [ ] **Verbeter de layout**: Voeg kleur en vetgedrukte tekst toe voor een mooiere weergave.
+- [ ] **Foutafhandeling verbeteren**: Voeg gedetailleerdere foutmeldingen toe.
+
+### 🌍 Meertalige Ondersteuning
+- [ ] **Voeg meertalige ondersteuning toe**: Maak het script beschikbaar in meerdere talen, zoals Engels en Nederlands.
+
+### 🛠️ Tools en Functionaliteit
+- [ ] **Meer tools toevoegen**: Voeg populaire pentest-tools toe voor extra functionaliteit.
+
+### 🧰 Documentatie
+- [ ] **README verbeteren**: Voeg meer uitleg toe en verbeter de documentatie.
+
+### 🧑‍💻 Community
+- [ ] **Bijdragen aanmoedigen**: Maak het gemakkelijker voor anderen om bij te dragen aan het project.
+
