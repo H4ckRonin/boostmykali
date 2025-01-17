@@ -22,4 +22,4 @@ Om **BoostMyKali** te installeren, volg deze stappen:
 
 1. **Clone de repository**:
    ```bash
-   git clone https://github.com/jouwgebruikersnaam/boostmykali.git
+   git clone https://github.com/h4ckronin/boostmykali.git
