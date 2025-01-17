@@ -133,7 +133,30 @@ install_other_tools() {
     sudo apt install terminator timewarrior taskwarrior -y
 }
 
-#!/bin/bash
+install_bbh() {
+    echo "Bug Bounty Hunter Tools installeren..."
+    sudo apt install golang amass subfinder ffuf feroxbuster gobuster dirbuster dirsearch -y
+    echo "Installing Project Discovery's Tool Manager"
+    go install -v github.com/projectdiscovery/pdtm/cmd/pdtm@latest
+    pdtm -install-all
+}
+
+api_bbh(){
+    echo "Configuring your apikeys..."
+    echo "https://cloud.projectdiscovery.io/?ref=api_key"
+    # Prompt the user to enter their API key
+    echo "Please enter your PDCP API key:"
+    read -s PDCP_API_KEY
+
+    # Export the API key
+    export PDCP_API_KEY
+
+    # Confirmation message
+    echo "ProjectDiscovery API key has been set successfully."
+#    cvemap -auth
+#    asnmap -auth
+
+}
 
 # Function to install plugins
 install_plugin() {
@@ -272,8 +295,9 @@ EOF
     echo "3. Zsh plugins installeren en beheren"
     echo "4. Alles installeren (updates, tools en plugins)"
     echo "5. Git instellen"
-    echo "6. Afsluiten"
-    read -p "Kies een optie (1-5): " choice
+    echo "6. BBH Tools installeren en API keys configureren"
+    echo "7. Afsluiten"
+    read -p "Kies een optie (1-7): " choice
     case $choice in
         1)
             check_updates
@@ -305,6 +329,10 @@ EOF
             configure_git
             ;;
         6)
+            install_bbh
+            api_bbh
+            ;;
+        7)
             echo "Afsluiten. Tot ziens!"
             exit 0
             ;;
