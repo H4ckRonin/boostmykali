@@ -99,8 +99,6 @@ install_other_tools() {
     sudo apt install terminator timewarrior taskwarrior -y
 }
 
-#!/bin/bash
-
 # Function to install plugins
 install_plugin() {
     local plugin_url=$1
