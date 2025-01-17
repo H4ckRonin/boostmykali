@@ -1,7 +1,3 @@
-Hier is de nieuwe en verbeterde versie van je README:
-
----
-
 # BoostMyKali 🖥️✨
 
 **BoostMyKali** is een open-source project dat je helpt om Kali Linux te optimaliseren met een krachtig opstartscript en handige systeemconfiguraties. Het project is ontworpen om de prestaties van Kali Linux te verbeteren, essentiële tools te installeren en de algehele gebruikerservaring te vereenvoudigen. BoostMyKali is ideaal voor zowel beginners als gevorderde gebruikers die snel hun systeem willen verbeteren.
