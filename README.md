@@ -1,7 +1,3 @@
-Here’s the translation to English:
-
----
-
 # BoostMyKali 🖥️✨
 
 **BoostMyKali** is an open-source project that helps you optimize Kali Linux with a powerful startup script and useful system configurations. The project is designed to improve Kali Linux performance, install essential tools, and simplify the overall user experience. BoostMyKali is ideal for both beginners and advanced users who want to quickly enhance their system.
