@@ -1,101 +1,101 @@
 #!/bin/bash
 
-# Functie om te controleren of een programma geïnstalleerd is
+# Function to check if a program is installed
 is_installed() {
     local program="$1"
     
-    # Controleren of het programma beschikbaar is via 'which' (voor binaire bestanden in $PATH)
+    # Check if the program is available using 'which' (for binaries in $PATH)
     if command -v "$program" &> /dev/null; then
-        echo "$program is al geïnstalleerd."
-        return 0  # Het programma is geïnstalleerd
+        echo "$program is already installed."
+        return 0  # Program is installed
     else
-        echo "$program is niet geïnstalleerd."
-        return 1  # Het programma is niet geïnstalleerd
+        echo "$program is not installed."
+        return 1  # Program is not installed
     fi
 }
 
-# Functie om te controleren of er updates beschikbaar zijn
+# Function to check if updates are available
 check_updates() {
-    echo "Controleren op updates..."
+    echo "Checking for updates..."
 
-    # Voer een apt update uit zonder te upgraden, en filter alleen op 'upgradable' pakketten
+    # Run an apt update without upgrading, and filter only 'upgradable' packages
     UPDATES=$(sudo apt update -qq | grep -i 'upgradable' | wc -l)
 
     if [ "$UPDATES" -gt 0 ]; then
-        echo "Er zijn updates beschikbaar."
-        return 1  # Er zijn updates beschikbaar
+        echo "Updates are available."
+        return 1  # Updates are available
     else
-        echo "Het systeem is al up-to-date."
-        return 0  # Geen updates beschikbaar
+        echo "The system is already up-to-date."
+        return 0  # No updates available
     fi
 }
 
-# Functie om systeem bij te werken als er updates zijn
+# Function to upgrade the system if updates are available
 upgrade_system() {
-    echo "Updates worden geïnstalleerd..."
+    echo "Installing updates..."
     sudo apt upgrade -y
 }
 
+# Function to configure git
 configure_git() {
-  read -p "Voer je naam in: " name
-  read -p "Voer je e-mailadres in: " email
+  read -p "Enter your name: " name
+  read -p "Enter your email address: " email
 
   git config --global user.name "$name"
   git config --global user.email "$email"
 
-  echo "Git-configuratie is ingesteld:"
-  echo "Naam: $name"
-  echo "E-mail: $email"
+  echo "Git configuration set:"
+  echo "Name: $name"
+  echo "Email: $email"
 }
 
+# Function to install Codium
+install_codium() {
+    echo "Installing Codium..."
 
-# Functie om Codium te installeren
-install_Codium() {
-    echo "Codium installeren..."
-
-    # Controleer of Codium al geïnstalleerd is
+    # Check if Codium is already installed
     if is_installed "Codium"; then
-        echo "Codium is al geïnstalleerd, overslaan."
-        return 0  # Als het al geïnstalleerd is, sla de installatie over
+        echo "Codium is already installed, skipping."
+        return 0  # If it's already installed, skip installation
     fi
 
     wget https://github.com/VSCodium/vscodium/releases/download/1.96.3.25013/codium_1.96.3.25013_amd64.deb -O codium.deb
 
-    # Installeer de laatste versie van Codium
+    # Install the latest version of Codium
     chmod +x codium.deb
     sudo dpkg -i codium.deb
 }
 
-# Functie om caido te installeren
+# Function to install Caido
 install_caido() {
-    echo "Caido installeren..."
+    echo "Installing Caido..."
 
-    # Controleer of Caido al geïnstalleerd is
+    # Check if Caido is already installed
     if is_installed "caido"; then
-        echo "Caido is al geïnstalleerd, overslaan."
-        return 0  # Als het al geïnstalleerd is, sla de installatie over
+        echo "Caido is already installed, skipping."
+        return 0  # If it's already installed, skip installation
     fi
 
-    # Voeg de repository toe voor Codium
+    # Add the repository for Codium
     wget https://caido.download/releases/v0.45.1/caido-desktop-v0.45.1-linux-x86_64.deb -O caido.deb
 
-    # Installeer de laatste versie van Codium
+    # Install the latest version of Caido
     chmod +x caido.deb
     sudo dpkg -i caido.deb
 }
 
-# Functie om Oh My Zsh te installeren
+# Function to install Oh My Zsh
 install_oh_my_zsh(){
     if [ ! -d "$ZSH" ]; then
         sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
     else
-        echo "Oh My Zsh is al geïnstalleerd."
+        echo "Oh My Zsh is already installed."
     fi
 }
 
-# Functie voor andere tools installeren
+# Function to install other tools
 install_other_tools() {
-    echo "Andere tools installeren..."
+    echo "Installing other tools..."
     sudo apt install terminator timewarrior taskwarrior -y
 }
 
@@ -197,10 +197,60 @@ manage_plugins() {
     echo "Plugins are installed and ~/.zshrc is updated."
 }
 
-# Functie voor hoofdmenu om keuze van de gebruiker te maken
+install_bbh() {
+    echo "Bug Bounty Hunter Tools installeren..."
+    
+    # Install required packages
+    sudo apt install golang amass subfinder ffuf feroxbuster gobuster dirbuster dirsearch -y
+    
+    # Ask for Go version
+    echo "Type the version of Go you want to install (1.19 or leave blank for latest recommended):"
+    read GOVERSION
+    
+    # If Go version is provided, download and run the installer script with the specified version
+    if [ -n "$GOVERSION" ]; then
+        # Download the installer script
+        echo "Downloading go-installer.sh..."
+        wget https://git.io/go-installer.sh
+        chmod +x go-installer.sh
+        # Run the installer script with the specified version
+        bash go-installer.sh --version "$GOVERSION"
+    else
+        # If no version is provided, use curl to run the script directly
+        echo "Running go-installer.sh directly..."
+        bash <(curl -sL https://git.io/go-installer)
+    fi
+    
+    # Install Project Discovery's Tool Manager
+    echo "Installing Project Discovery's Tool Manager"
+    go install -v github.com/projectdiscovery/pdtm/cmd/pdtm@latest
+    
+    # Final instructions
+    echo "Now you have to type: source ~/.zshrc; pdtm --install-all"
+}
+
+api_bbh(){
+    echo "Configuring your apikeys..."
+    echo "https://cloud.projectdiscovery.io/?ref=api_key"
+    # Prompt the user to enter their API key
+    echo "Please enter your PDCP API key:"
+    read -s PDCP_API_KEY
+
+    # Export the API key
+    export PDCP_API_KEY
+
+    # Confirmation message
+    echo "ProjectDiscovery API key has been set successfully."
+#    cvemap -auth
+#    asnmap -auth
+    sudo apt install -y libpcap-dev massdns
+}
+
+# Main menu function to allow user choice
 show_main_menu() {
     clear
     cat << EOF
+
 
     ⠀⠀⢀⣫⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡷⡀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⢸⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⣿⣿⣿⣿⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⢳⠀⠀⠀⠀
@@ -228,16 +278,18 @@ show_main_menu() {
 ⠀⠀⠀⠀⠀⠀⠠⢀⠐⠀⡀⠆⡰⣉⠼⡌⢧⡓⢧⢎⠯⣿⣞⡽⣟⠻⣿⡿⣿⣶⣯⣭⣵⣖⣲⠦⢬⣭⡵⣶⣄⣢⡐⠌⡡⢊⠌⣉⠋⠔⢠⠉⠷⡨⢦⣵⣤⣦⢤⡠⠏
 ⠀⠀⠀⠀⠀⠀⠠⠁⢀⠂⡜⣴⡱⣬⢧⣽⣷⣿⣿⣮⣷⣧⣞⣿⠨⡗⢠⠛⠶⣬⡙⠻⠿⣿⡿⢿⣷⣶⣶⣤⣴⣈⣉⠩⠑⠒⠰⠆⠬⣀⠂⠈⠄⡈⠁⢂⠉⠉⠉⠁⠂
 
+Welcome to the system configuration!
+
+What would you like to do?
+1. Check for updates and perform upgrades
+2. Install tools (Codium, Caido, other tools)
+3. Install and manage Zsh plugins
+4. Install everything (updates, tools, and plugins)
+5. Configure Git
+6. Configure Bug Bounty Hunting Tools
+7. Exit
 EOF
-    echo "Welkom bij de configuratie van je systeem!"
-    echo "Wat wil je doen?"
-    echo "1. Systeem bijwerken en upgrades uitvoeren"
-    echo "2. Tools installeren (Codium, Caido, andere tools)"
-    echo "3. Zsh plugins installeren en beheren"
-    echo "4. Alles installeren (updates, tools en plugins)"
-    echo "5. Git instellen"
-    echo "6. Afsluiten"
-    read -p "Kies een optie (1-5): " choice
+    read -p "Choose an option (1-6): " choice
     case $choice in
         1)
             check_updates
@@ -246,7 +298,7 @@ EOF
             fi
             ;;
         2)
-            install_Codium
+            install_codium
             install_caido
             install_other_tools
             ;;
@@ -259,7 +311,7 @@ EOF
             if [ $? -eq 1 ]; then
                 upgrade_system
             fi
-            install_Codium
+            install_codium
             install_caido
             install_other_tools
             manage_plugins
@@ -267,15 +319,22 @@ EOF
             ;;
         5)
             configure_git
-        6)
-            echo "Afsluiten. Tot ziens!"
+            ;;
+        6)  
+            install_bbh
+            wait
+            api_bbh
+            ;;
+        7)
+            echo "Exiting. Goodbye!"
             exit 0
             ;;
         *)
-            echo "Ongeldige keuze. Probeer het opnieuw."
+            echo "Invalid choice. Please try again."
             ;;
     esac
 }
 
-# Hoofdscript uitvoeren
+# Run the main menu script
 show_main_menu
+
