@@ -1,174 +1,259 @@
 #!/bin/bash
 
-# Function to check if a program is installed
+# Logbestand voor installaties
+LOGFILE="/var/log/system_install.log"
+exec > >(tee -a $LOGFILE) 2>&1
+
+# Zet het script in 'strict mode' zodat het stopt bij fouten
+set -euo pipefail  # Activeert strict mode: stop bij fouten, unset variabelen en pipeline fouten
+
+# Functie om te loggen
+log_message() {
+    local message="$1"
+    echo "[INFO] $(date '+%Y-%m-%d %H:%M:%S') - $message"
+}
+
+handle_error() {
+    local exit_code="$1"
+    local line="$2"
+    local command="$3"
+    log_message "Error on line $line: Exit code $exit_code. Command: $command"
+    exit "$exit_code"
+}
+
+trap 'handle_error $? $LINENO "$BASH_COMMAND"' ERR
+
+# Functie om te controleren of een programma is geïnstalleerd
 is_installed() {
     local program="$1"
+    command -v "$program" &> /dev/null
+}
+
+install_package() {
+    local program="$1"
+    local install_command="$2"
     
-    # Check if the program is available using 'which' (for binaries in $PATH)
-    if command -v "$program" &> /dev/null; then
-        echo "$program is already installed."
-        return 0  # Program is installed
+    log_message "Checking if $program is already installed..."
+    if is_installed "$program"; then
+        log_message "$program is already installed."
+        return 0
+    fi
+
+    log_message "Downloading and installing $program..."
+    
+    # Gebruik apt-get om het programma te installeren
+    sudo apt update -qq
+    sudo apt install -y "$program"
+    
+    if [ $? -ne 0 ]; then
+        log_message "Failed to install $program."
+        return 1
+    fi
+
+    log_message "$program installed successfully."
+    return 0
+}
+
+# Functie om systeemupdates te controleren en uit te voeren
+check_and_upgrade() {
+    log_message "Checking for updates..."
+
+    # Voer 'apt update' uit om de lijst van beschikbare updates te vernieuwen
+    sudo apt update -qq || { log_message "Failed to update package list."; return 1; }
+
+    # Controleer of er updates beschikbaar zijn
+    UPDATES=$(apt list --upgradable 2>/dev/null | wc -l)
+
+    if [ "$UPDATES" -gt 1 ]; then
+        log_message "Updates are available."
+
+        # Vraag de gebruiker of ze de updates willen uitvoeren
+        read -p "Do you want to install the updates now? (y/n): " update_choice
+        if [[ "$update_choice" == "y" || "$update_choice" == "Y" ]]; then
+            log_message "Installing updates..."
+            sudo apt upgrade --only-upgrade -y || { log_message "Failed to install updates."; return 1; }
+            log_message "Updates installed successfully."
+        else
+            log_message "Skipping updates."
+        fi
+
+        # Vraag de gebruiker of ze de upgrades willen uitvoeren
+        read -p "Do you want to upgrade the system now? (y/n): " upgrade_choice
+        if [[ "$upgrade_choice" == "y" || "$upgrade_choice" == "Y" ]]; then
+            log_message "Upgrading system..."
+            sudo apt upgrade -y || { log_message "Failed to upgrade system."; return 1; }
+            log_message "System upgraded successfully."
+        else
+            log_message "Skipping upgrade."
+        fi
     else
-        echo "$program is not installed."
-        return 1  # Program is not installed
+        log_message "The system is already up-to-date."
     fi
 }
 
-# Function to check if updates are available
-check_updates() {
-    echo "Checking for updates..."
-
-    # Run an apt update without upgrading, and filter only 'upgradable' packages
-    UPDATES=$(sudo apt update -qq | grep -i 'upgradable' | wc -l)
-
-    if [ "$UPDATES" -gt 0 ]; then
-        echo "Updates are available."
-        return 1  # Updates are available
-    else
-        echo "The system is already up-to-date."
-        return 0  # No updates available
-    fi
-}
-
-# Function to upgrade the system if updates are available
-upgrade_system() {
-    echo "Installing updates..."
-    sudo apt upgrade -y
-}
-
-# Function to configure git
+# Functie om Git te configureren
 configure_git() {
-  read -p "Enter your name: " name
-  read -p "Enter your email address: " email
+    read -p "Enter your name: " name
+    read -p "Enter your email address: " email
 
-  git config --global user.name "$name"
-  git config --global user.email "$email"
+    git config --global user.name "$name" || { log_message "Failed to configure Git name."; return 1; }
+    git config --global user.email "$email" || { log_message "Failed to configure Git email."; return 1; }
 
-  echo "Git configuration set:"
-  echo "Name: $name"
-  echo "Email: $email"
+    log_message "Git configuration set: Name: $name, Email: $email"
 }
 
-# Function to install Codium
+# Functie om Codium te installeren
 install_codium() {
-    echo "Installing Codium..."
-
-    # Check if Codium is already installed
-    if is_installed "Codium"; then
-        echo "Codium is already installed, skipping."
-        return 0  # If it's already installed, skip installation
-    fi
-
-    wget https://github.com/VSCodium/vscodium/releases/download/1.96.3.25013/codium_1.96.3.25013_amd64.deb -O codium.deb
-
-    # Install the latest version of Codium
-    chmod +x codium.deb
-    sudo dpkg -i codium.deb
+    local codium_url="https://github.com/VSCodium/vscodium/releases/download/1.96.3.25013/codium_1.96.3.25013_amd64.deb"
+    install_package "Codium" "wget $codium_url -O codium.deb && sudo dpkg -i codium.deb" || return 1
 }
 
-# Function to install Caido
+# Functie om Caido te installeren
 install_caido() {
-    echo "Installing Caido..."
-
-    # Check if Caido is already installed
-    if is_installed "caido"; then
-        echo "Caido is already installed, skipping."
-        return 0  # If it's already installed, skip installation
-    fi
-
-    # Add the repository for Codium
-    wget https://caido.download/releases/v0.45.1/caido-desktop-v0.45.1-linux-x86_64.deb -O caido.deb
-
-    # Install the latest version of Caido
-    chmod +x caido.deb
-    sudo dpkg -i caido.deb
+    local caido_url="https://caido.download/releases/v0.45.1/caido-desktop-v0.45.1-linux-x86_64.deb"
+    install_package "caido" "wget $caido_url -O caido.deb && sudo dpkg -i caido.deb" || return 1
 }
 
-# Function to install Oh My Zsh
-install_oh_my_zsh(){
+restart_shell() {
+    log_message "Restarting the shell to apply changes..."
+    exec zsh
+}
+
+install_oh_my_zsh() {
     if [ ! -d "$ZSH" ]; then
-        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" || { log_message "Failed to install Oh My Zsh."; return 1; }
+        log_message "Oh My Zsh installed."
+        restart_shell  # Herstart de shell na installatie
     else
-        echo "Oh My Zsh is already installed."
+        log_message "Oh My Zsh is already installed."
     fi
 }
 
-# Function to install other tools
+
+# Functie om andere tools te installeren
 install_other_tools() {
-    echo "Installing other tools..."
-    sudo apt install terminator timewarrior taskwarrior -y
+    local tools=("terminator" "timewarrior" "taskwarrior")
+    for tool in "${tools[@]}"; do
+        install_package "$tool" "sudo apt install -y $tool" || return 1
+    done
 }
 
-# Function to install plugins
+install_bbh() {
+    log_message "Bug Bounty Hunter Tools installeren..."
+
+    # Functie om Go te controleren, versie te verkrijgen en te installeren
+    log_message "Checking if Go is installed..."
+
+    if command -v go &> /dev/null; then
+        # Go is already installed, get the current version
+        CURRENT_GO_VERSION=$(go version | awk '{print $3}' | sed 's/go//')
+        log_message "Go is already installed. Current version: $CURRENT_GO_VERSION"
+        
+        log_message "Would you like to reinstall Go? (y/n)"
+        read REINSTALL_GO
+        
+        # If the user does not want to reinstall Go, skip the Go installation
+        if [[ "$REINSTALL_GO" != "y" ]]; then
+            log_message "Skipping Go reinstallation."
+            GO_SKIP=true  # Flag to indicate skipping Go installation
+        else
+            log_message "Proceeding with Go reinstallation..."
+            GO_SKIP=false  # Flag to indicate proceeding with Go installation
+        fi
+    else
+        log_message "Go is not installed. Proceeding with installation."
+        GO_SKIP=false  # Flag to install Go if it's not installed
+    fi
+
+    # If the user opts to reinstall or Go is not installed, ask for the Go version
+    if [[ "$GO_SKIP" == false ]]; then
+        log_message "Type the version of Go you want to install (e.g., 1.19) or type 'directly' for the latest version:"
+        read GOVERSION
+
+        if [[ "$GOVERSION" == "directly" ]]; then
+            log_message "You have chosen to install the latest version of Go."
+            bash <(curl -sL https://git.io/go-installer) || { log_message "Failed to install Go."; return 1; }
+        elif [[ ! "$GOVERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
+            log_message "Invalid Go version format. Please enter a version in the format 'X.Y' (e.g., 1.19)."
+            return 1
+        else
+            log_message "You have chosen Go version $GOVERSION."
+            log_message "Downloading go-installer.sh..."
+            wget https://git.io/go-installer.sh || { log_message "Failed to download go-installer.sh."; return 1; }
+            chmod +x go-installer.sh
+            bash go-installer.sh --version "$GOVERSION" || { log_message "Failed to install Go version $GOVERSION."; return 1; }
+        fi
+    fi
+
+    # Install Bug Bounty Hunter tools
+    log_message "Installing Bug Bounty Hunter Tools..."
+
+    install_package() {
+        local program="$1"
+        local install_command="$2"
+
+        log_message "Downloading and installing $program..."
+        if ! sudo apt install -y $install_command; then
+            log_message "Failed to install $program."
+            return 1
+        fi
+        log_message "$program installed successfully."
+    }
+
+    install_package "golang" "golang" || return 1
+    install_package "amass" "amass" || return 1
+    install_package "subfinder" "subfinder" || return 1
+    install_package "ffuf" "ffuf" || return 1
+    install_package "feroxbuster" "feroxbuster" || return 1
+    install_package "gobuster" "gobuster" || return 1
+    install_package "dirbuster" "dirbuster" || return 1
+    install_package "dirsearch" "dirsearch" || return 1
+
+    # Install Project Discovery's Tool Manager
+    log_message "Installing Project Discovery's Tool Manager"
+    go install -v github.com/projectdiscovery/pdtm/cmd/pdtm@latest || { log_message "Failed to install Project Discovery's Tool Manager."; return 1; }
+
+    log_message "Now you have to type: source ~/.zshrc; pdtm --install-all"
+}
+
+
+# Functie om Bug Bounty Hunting API aanroepen te beheren
+api_bbh() {
+    log_message "Configuring your apikeys..."
+    log_message "https://cloud.projectdiscovery.io/?ref=api_key"
+    
+    log_message "Please enter your PDCP API key:"
+    read -s PDCP_API_KEY
+
+    export PDCP_API_KEY
+    log_message "ProjectDiscovery API key has been set successfully."
+
+    install_package "libpcap-dev" "sudo apt install -y libpcap-dev" || return 1
+    install_package "massdns" "sudo apt install -y massdns" || return 1
+}
+
+# Functie om een Zsh plugin te installeren
 install_plugin() {
     local plugin_url=$1
     local plugin_name
-    # Extract the plugin name from the URL (strip the path and extension)
     plugin_name=$(basename "$plugin_url" .plugin.zsh)
-    echo "Installing plugin $plugin_name from $plugin_url..."
+    log_message "Installing plugin $plugin_name from $plugin_url..."
 
-    # Define the plugin directory
     local plugin_dir="$ZSH_CUSTOM/plugins/$plugin_name"
-
-    # Create the plugin directory if it doesn't exist
     mkdir -p "$plugin_dir"
+    curl -L "$plugin_url" -o "$plugin_dir/$plugin_name.plugin.zsh" || { log_message "Failed to download plugin $plugin_name."; return 1; }
 
-    # Download the raw plugin file from the provided URL and save it without the .plugin.zsh extension
-    curl -L "$plugin_url" -o "$plugin_dir/$plugin_name.plugin.zsh"
-
-    # Check if the plugin was downloaded successfully
     if [[ -f "$plugin_dir/$plugin_name.plugin.zsh" ]]; then
-        echo "$plugin_name successfully installed!"
+        log_message "$plugin_name installed successfully."
     else
-        echo "Failed to install $plugin_name!"
+        log_message "Failed to install $plugin_name."
+        return 1
     fi
 }
 
-# Function to remove plugins
-remove_plugin() {
-    local plugin_name=$1
-    echo "Removing $plugin_name..."
-
-    # Remove the plugin directory
-    rm -rf "$ZSH_CUSTOM/plugins/$plugin_name"
-
-    # Check if the plugin was removed successfully
-    if [[ ! -d "$ZSH_CUSTOM/plugins/$plugin_name" ]]; then
-        echo "$plugin_name successfully removed!"
-    else
-        echo "Failed to remove $plugin_name!"
-    fi
-}
-
-# Function to update ~/.zshrc with the installed plugins
-update_zshrc() {
-    echo "Updating ~/.zshrc with the installed plugins..."
-    
-    # Get the current list of plugins in ~/.zshrc
-    current_plugins=$(grep -oP '(?<=^plugins=\()[^\)]+' ~/.zshrc)
-
-    # Add plugins to ~/.zshrc if they aren't already there
-    for plugin in "${plugins[@]}"; do
-        plugin_name=$(basename "$plugin" .plugin.zsh) # Remove .plugin.zsh from the plugin name
-        if [[ ! "$current_plugins" =~ "$plugin_name" ]]; then
-            sed -i "/^plugins=(/s/)/ $plugin_name )/" ~/.zshrc
-            echo "Added $plugin_name to ~/.zshrc"
-        fi
-    done
-
-    # Remove plugins from ~/.zshrc that are no longer in the list
-    for plugin in $(echo "$current_plugins" | tr ' ' '\n'); do
-        if [[ ! " ${plugins[@]} " =~ " $plugin " ]]; then
-            sed -i "/^plugins=(/s/ $plugin//" ~/.zshrc
-            echo "Removed $plugin from ~/.zshrc"
-        fi
-    done
-}
-
-# Function to manage plugins (install/remove)
+# Functie om plugins te beheren
 manage_plugins() {
-    # Define the plugins you want to install or remove (including the raw plugin URL)
-    plugins=(
+    local plugins=(
         "zsh-users/zsh-autosuggestions"
         "zsh-users/zsh-syntax-highlighting"
         "zsh-users/zsh-history-substring-search"
@@ -177,79 +262,24 @@ manage_plugins() {
         "https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/web-search/web-search.plugin.zsh"
     )
 
-    # Install plugins
     for plugin in "${plugins[@]}"; do
         if [[ "$plugin" == https://* ]]; then
-            install_plugin "$plugin"
+            install_plugin "$plugin" || return 1
         else
             plugin_name=$(basename "$plugin")
             if [[ ! -d "$ZSH_CUSTOM/plugins/$plugin_name" ]]; then
-                git clone "https://github.com/$plugin.git" "$ZSH_CUSTOM/plugins/$plugin_name"
+                git clone "https://github.com/$plugin.git" "$ZSH_CUSTOM/plugins/$plugin_name" || { log_message "Failed to clone plugin $plugin_name."; return 1; }
             else
-                echo "$plugin_name is already installed."
+                log_message "$plugin_name is already installed."
             fi
         fi
     done
-
-    # Update ~/.zshrc with the list of installed plugins
-    update_zshrc
-
-    echo "Plugins are installed and ~/.zshrc is updated."
 }
 
-install_bbh() {
-    echo "Bug Bounty Hunter Tools installeren..."
-    
-    # Install required packages
-    sudo apt install golang amass subfinder ffuf feroxbuster gobuster dirbuster dirsearch -y
-    
-    # Ask for Go version
-    echo "Type the version of Go you want to install (1.19 or leave blank for latest recommended):"
-    read GOVERSION
-    
-    # If Go version is provided, download and run the installer script with the specified version
-    if [ -n "$GOVERSION" ]; then
-        # Download the installer script
-        echo "Downloading go-installer.sh..."
-        wget https://git.io/go-installer.sh
-        chmod +x go-installer.sh
-        # Run the installer script with the specified version
-        bash go-installer.sh --version "$GOVERSION"
-    else
-        # If no version is provided, use curl to run the script directly
-        echo "Running go-installer.sh directly..."
-        bash <(curl -sL https://git.io/go-installer)
-    fi
-    
-    # Install Project Discovery's Tool Manager
-    echo "Installing Project Discovery's Tool Manager"
-    go install -v github.com/projectdiscovery/pdtm/cmd/pdtm@latest
-    
-    # Final instructions
-    echo "Now you have to type: source ~/.zshrc; pdtm --install-all"
-}
-
-api_bbh(){
-    echo "Configuring your apikeys..."
-    echo "https://cloud.projectdiscovery.io/?ref=api_key"
-    # Prompt the user to enter their API key
-    echo "Please enter your PDCP API key:"
-    read -s PDCP_API_KEY
-
-    # Export the API key
-    export PDCP_API_KEY
-
-    # Confirmation message
-    echo "ProjectDiscovery API key has been set successfully."
-#    cvemap -auth
-#    asnmap -auth
-    sudo apt install -y libpcap-dev massdns
-}
-
-# Main menu function to allow user choice
+# Hoofdmenu van het script
 show_main_menu() {
     clear
-    cat << EOF
+    cat <<EOF
 
 
     ⠀⠀⢀⣫⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡷⡀⠀⠀⠀⠀
@@ -289,13 +319,10 @@ What would you like to do?
 6. Configure Bug Bounty Hunting Tools
 7. Exit
 EOF
-    read -p "Choose an option (1-6): " choice
+    read -p "Choose an option (1-7): " choice
     case $choice in
         1)
-            check_updates
-            if [ $? -eq 1 ]; then
-                upgrade_system
-            fi
+            check_and_upgrade
             ;;
         2)
             install_codium
@@ -304,37 +331,30 @@ EOF
             ;;
         3)
             manage_plugins
-            sudo update-alternatives --set x-www-browser /usr/bin/firefox-esr
             ;;
         4)
-            check_updates
-            if [ $? -eq 1 ]; then
-                upgrade_system
-            fi
+            check_and_upgrade
             install_codium
             install_caido
             install_other_tools
             manage_plugins
-            sudo update-alternatives --set x-www-browser /usr/bin/firefox-esr
             ;;
         5)
             configure_git
             ;;
-        6)  
+        6)
             install_bbh
-            wait
             api_bbh
             ;;
         7)
-            echo "Exiting. Goodbye!"
+            log_message "Exiting. Goodbye!"
             exit 0
             ;;
         *)
-            echo "Invalid choice. Please try again."
+            log_message "Invalid choice. Please try again."
             ;;
     esac
 }
 
-# Run the main menu script
+# Voer het hoofdmenu uit
 show_main_menu
-
