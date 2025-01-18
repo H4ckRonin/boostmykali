@@ -3,7 +3,7 @@
 **BoostMyKali** is an open-source project that helps you optimize Kali Linux with a powerful startup script and useful system configurations. The project is designed to improve Kali Linux performance, install essential tools, and simplify the overall user experience. BoostMyKali is ideal for both beginners and advanced users who want to quickly enhance their system.
 
 <img src="https://media1.tenor.com/m/ent7ezY8bqkAAAAd/world-trigger-anime.gif" alt="World Trigger Anime" width="400" height="200">  
----
+
 
 ## 🚀 Features
 
