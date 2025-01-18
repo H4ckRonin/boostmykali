@@ -1,107 +1,92 @@
+Here’s the translation to English:
+
+---
+
 # BoostMyKali 🖥️✨
 
-**BoostMyKali** is een open-source project dat je helpt om Kali Linux te optimaliseren met een krachtig opstartscript en handige systeemconfiguraties. Het project is ontworpen om de prestaties van Kali Linux te verbeteren, essentiële tools te installeren en de algehele gebruikerservaring te vereenvoudigen. BoostMyKali is ideaal voor zowel beginners als gevorderde gebruikers die snel hun systeem willen verbeteren.
+**BoostMyKali** is an open-source project that helps you optimize Kali Linux with a powerful startup script and useful system configurations. The project is designed to improve Kali Linux performance, install essential tools, and simplify the overall user experience. BoostMyKali is ideal for both beginners and advanced users who want to quickly enhance their system.
 
 <img src="https://media1.tenor.com/m/ent7ezY8bqkAAAAd/world-trigger-anime.gif" alt="World Trigger Anime" width="400" height="200">  
 ---
 
-## 🚀 Kenmerken
+## 🚀 Features
 
-- **Geoptimaliseerde configuraties**: Het script past verschillende systeeminstellingen aan om de prestaties van Kali Linux te verbeteren en biedt eenvoudig toegang tot veelgebruikte tools.
+- **Optimized Configurations**: The script adjusts various system settings to improve Kali Linux performance and provides easy access to commonly used tools.
   
-- **Gebruiksvriendelijke installatie**: BoostMyKali biedt een eenvoudige installatie en configuratie, zodat je in een paar stappen je Kali-systeem kunt verbeteren.
+- **User-Friendly Installation**: BoostMyKali offers a simple installation and configuration process so you can improve your Kali system in just a few steps.
 
-- **Open-source**: Het project is volledig open-source en beschikbaar onder de MIT-licentie, zodat je het kunt aanpassen of verder ontwikkelen naar eigen behoefte.
+- **Open-Source**: The project is fully open-source and available under the MIT license, allowing you to modify or further develop it according to your needs.
 
-- **Volledig geautomatiseerd**: Het script installeert en configureert verschillende tools en systeeminstellingen met één eenvoudige opdracht.
+- **Fully Automated**: The script installs and configures various tools and system settings with a single simple command.
 
 ---
 
-## 🛠️ Installatie
+## 🛠️ Installation
 
-Om **BoostMyKali** te installeren, volg je deze eenvoudige stappen:
+To install **BoostMyKali**, follow these simple steps:
 
-1. **Clone de repository**:
-   Voer de volgende opdracht uit om de repository te klonen:
+1. **Clone the repository**:
+   Run the following command to clone the repository:
    ```bash
    git clone https://github.com/h4ckronin/boostmykali.git
    ```
 
-2. **Navigeer naar de directory**:
-   Ga naar de map van het gekloonde project:
+2. **Navigate to the directory**:
+   Go to the cloned project directory:
    ```bash
    cd boostmykali
    ```
 
-3. **Voer het script uit**:
-   Start het opstartscript dat je Kali-systeem zal optimaliseren:
+3. **Run the script**:
+   Start the startup script that will optimize your Kali system:
    ```bash
    sudo ./boostmykali.sh
    ```
 
-   Volg de instructies in het script om verschillende instellingen en tools te installeren.
+   Follow the instructions in the script to install various settings and tools.
 
 ---
 
-## 🧰 Geïnstalleerde Tools
+## 🧰 Installed Tools
 
-### 1. **Systeemtools en updates**
-   - **Apt Updates**: Zorgt ervoor dat je systeem altijd up-to-date is.
-   - **Terminator**: Geavanceerde terminal emulator voor efficiënt multitasken.
-   - **Timewarrior**: Tool voor het bijhouden van je tijd en taken.
-   - **Taskwarrior**: Taakbeheerder voor het organiseren van je dagelijkse werk.
+### 1. **System Tools and Updates**
+   - **Apt Updates**: Ensures your system is always up-to-date.
+   - **Terminator**: Advanced terminal emulator for efficient multitasking.
+   - **Timewarrior**: Tool for tracking your time and tasks.
+   - **Taskwarrior**: Task manager for organizing your daily work.
 
-### 2. **Ontwikkel- en programmeertools**
-   - **Codium**: Open-source versie van Visual Studio Code, een krachtige teksteditor voor ontwikkelaars.
-   - **Caido**: Tool voor OSINT-onderzoek en bug bounty hunting.
+### 2. **Development and Programming Tools**
+   - **Codium**: Open-source version of Visual Studio Code, a powerful text editor for developers.
+   - **Caido**: OSINT research and bug bounty hunting tool.
 
-### 3. **Zsh Configuratie en Plugins**
-   - **Oh My Zsh**: Populaire Zsh-configuratie voor verbeterde terminalervaring.
-   - **Zsh-autosuggestions**: Automatische suggesties voor de Zsh-shell.
-   - **Zsh-syntax-highlighting**: Syntax-highlighting voor de Zsh-shell.
-   - **Zsh-history-substring-search**: Zoeken in Zsh-historie met substrings.
+### 3. **Zsh Configuration and Plugins**
+   - **Oh My Zsh**: Popular Zsh configuration for an enhanced terminal experience.
+   - **Zsh-autosuggestions**: Auto-suggestions for the Zsh shell.
+   - **Zsh-syntax-highlighting**: Syntax highlighting for the Zsh shell.
+   - **Zsh-history-substring-search**: Search Zsh history using substrings.
 
 ### 4. **Bug Bounty Hunting Tools**
-   - **Amass**: Tool voor het uitvoeren van informatieverkenning.
-   - **Subfinder**: DNS-subdomeinenverkenner.
-   - **FFuf**: Fuzzing-tool voor directory- en file discovery.
-   - **Feroxbuster**: Fuzzing-tool voor directory brute-forcing.
-   - **Gobuster**: Tool voor het brute-forcen van subdomeinen en directories.
-   - **Dirbuster**: Brute-force tool voor directories en bestanden op webservers.
+   - **Amass**: Information gathering tool.
+   - **Subfinder**: DNS subdomain enumeration tool.
+   - **FFuf**: Fuzzing tool for directory and file discovery.
+   - **Feroxbuster**: Fuzzing tool for directory brute-forcing.
+   - **Gobuster**: Tool for brute-forcing subdomains and directories.
+   - **Dirbuster**: Brute-force tool for directories and files on web servers.
 
 ### 5. **Go Software**
-   - **Go-installer**: Installeert de gewenste versie van Go, handig voor de bovenstaande tools die Go gebruiken.
+   - **Go-installer**: Installs the desired version of Go, useful for the above tools that rely on Go.
 
 ### 6. **Project Discovery Tools**
-   - **Project Discovery Tool Manager (PDTM)**: Een handige manager voor tools van Project Discovery, die eenvoudig kunnen worden geïnstalleerd en geüpdatet.
+   - **Project Discovery Tool Manager (PDTM)**: A handy tool manager for Project Discovery tools, making it easy to install and update them.
 
 ---
 
-## 📜 Licentie
+## 📜 License
 
-BoostMyKali is open-source software, gelicenseerd onder de MIT-licentie. Dit betekent dat je de code kunt aanpassen, herdistribueren en gebruiken zoals je wilt, zolang je de originele licentie-informatie meeneemt.
+BoostMyKali is open-source software, licensed under the MIT license. This means you can modify, redistribute, and use the code as you wish, as long as you include the original license information.
 
 ---
 
-## 💬 Ondersteuning
+## 💬 Support
 
-Heb je vragen of loop je tegen problemen aan? Neem contact op via de issues sectie van de repository, en we helpen je graag verder!
-
-## 📝 To-Do
-
-### 💻 Verbeteringen
-- [ ] **Verbeter de layout**: Voeg kleur en vetgedrukte tekst toe voor een mooiere weergave.
-- [ ] **Foutafhandeling verbeteren**: Voeg gedetailleerdere foutmeldingen toe.
-
-### 🌍 Meertalige Ondersteuning
-- [ ] **Voeg meertalige ondersteuning toe**: Maak het script beschikbaar in meerdere talen, zoals Engels en Nederlands.
-
-### 🛠️ Tools en Functionaliteit
-- [ ] **Meer tools toevoegen**: Voeg populaire pentest-tools toe voor extra functionaliteit.
-
-### 🧰 Documentatie
-- [ ] **README verbeteren**: Voeg meer uitleg toe en verbeter de documentatie.
-
-### 🧑‍💻 Community
-- [ ] **Bijdragen aanmoedigen**: Maak het gemakkelijker voor anderen om bij te dragen aan het project.
-
+Have questions or encountering issues? Feel free to reach out via the issues section of the repository, and we’ll be happy to help! 
